@@ -28,7 +28,7 @@
       new TestOf("Default sort is numeric")
     .Subprogram((a) => { return a.sort(); }, null )
     .Passed([2, 3, 5, 7, 11, 13, 17, 19, 23])
-    .Should(Return, [2, 3, 5, 7, 11, 13, 17, 19, 23], array_equals)
+    .Should(Return, [2, 3, 5, 7, 11, 13, 17, 19, 23], cmp = array_equals)
     .Log()
     .HtmlElement();
       
@@ -36,7 +36,7 @@
       new TestOf("Default sort is lexical")
     .Subprogram((a) => { return a.sort(); }, null)
     .Passed([2, 3, 5, 7, 11, 13, 17, 19, 23])
-    .Should(Return, [11, 13, 17, 19, 2, 23, 3, 5, 7], array_equals)
+    .Should(Return, [11, 13, 17, 19, 2, 23, 3, 5, 7], cmp = array_equals)
     .Log()
     .HtmlElement();
 
@@ -48,10 +48,9 @@
     .HtmlElement();
 
       // Object property: fail
-      new TestOf("Array push length")
-    .Subprogram(Array.prototype.push, [])
-    .Passed("item")
-    .Should(HaveProperty, "length", 2)
+      new TestOf("Object member value")
+    .ByDefault({a: [1, 2]})
+    .Should(HaveProperty, "a", [2, 1])
     .Log()
     .HtmlElement();
 

@@ -32,10 +32,12 @@ function Return(ctx, expected, cmp = (v1, v2) => { return v1 === v2; } ) {
 }
 
 // Expect that after the call this.obj.prop will have the value expected
-function HaveProperty(ctx, prop, expected) {
+function HaveProperty(ctx, prop, expected,
+		      cmp = (v1, v2) => { return v1 === v2; }) {
     ctx.action.apply(ctx.obj, ctx.inputs);
-    return ctx.obj[prop] === expected ? null :
-	`Expected ${prop} set to ${expected}, but found ${this.obj[prop]}`;
+    const cmp_result = cmp(ctx.obj[prop], expected);
+    return cmp_result ? null :
+	`Expected ${prop} set to ${expected}, but found ${ctx.obj[prop]}`;
 }
 
 // Expect the call to throw an uncaught exception
@@ -49,15 +51,10 @@ function Throw(ctx, expectedError) {
     }
 }
 
-// Helper function
-const noop = () => {}; 
-
 // Main test interface
 class TestOf {    
     constructor(description) {
         this.description = description;
-        this.action = null;
-	this.obj = null;
         this.inputs = [];
     }
 
@@ -78,7 +75,7 @@ class TestOf {
 
     // Replaces Subprogram(...).Passed(...) for  testing construction of this.obj
     ByDefault(obj) {
-        this.action = noop;
+        this.action = () => {}; // No-op
 	this.obj = obj;
 	this.inputs = [];
 	return this;
@@ -102,7 +99,7 @@ class TestOf {
         try {
             this.message = validator.call(null, context, ...validator_args);
         } catch (e) {
-	    this.message = `Test "${this.description}" failed to run`
+	    this.message = `Test "${this.description}" failed to run: ${e}`
 	}
 	
 	return this;
