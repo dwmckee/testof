@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demonstration Tests</title>
+    <script src="testof.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <script>
+      function array_equals(a1, a2) {
+	  return a1.length === a2.length &&
+	      a1.every((val, idx) => { return val === a2[idx]; });
+      }
+      
+      // Check result with default comparison; fail
+      new TestOf("String toUpperCase")
+    .Subprogram((s) => {return s.toUpperCase();}, null)
+    .Passed("hello")
+    .Should(Return, "HELLO")
+    .Log()
+    .HtmlElement();
+
+      // Check result with custom comparison; fail
+      new TestOf("Default sort is numeric")
+    .Subprogram((a) => { return a.sort(); }, null )
+    .Passed([2, 3, 5, 7, 11, 13, 17, 19, 23])
+    .Should(Return, [2, 3, 5, 7, 11, 13, 17, 19, 23], array_equals)
+    .Log()
+    .HtmlElement();
+      
+      // Check result with custom comparison; pass
+      new TestOf("Default sort is lexical")
+    .Subprogram((a) => { return a.sort(); }, null)
+    .Passed([2, 3, 5, 7, 11, 13, 17, 19, 23])
+    .Should(Return, [11, 13, 17, 19, 2, 23, 3, 5, 7], array_equals)
+    .Log()
+    .HtmlElement();
+
+      // Object property: pass
+      new TestOf("Array initial length")
+    .ByDefault([])
+    .Should(HaveProperty, "length", 0)
+    .Log()
+    .HtmlElement();
+
+      // Object property: fail
+      new TestOf("Array push length")
+    .Subprogram(Array.prototype.push, [])
+    .Passed("item")
+    .Should(HaveProperty, "length", 2)
+    .Log()
+    .HtmlElement();
+
+      // Exception test: pass
+      new TestOf("JSON.parse invalid input")
+        .Subprogram(JSON.parse)
+        .Passed("{ invalid json }")
+        .Should(Throw, SyntaxError)
+        .Log()
+        .HtmlElement();
+
+      // Exception test: fail
+      new TestOf("Math.sqrt no throw")
+        .Subprogram(Math.sqrt)
+        .Passed(16)
+        .Should(Throw, Error)
+        .Log()
+        .HtmlElement();
+    </script>
+
+    <!-- Run the script -->
+    
+  </body>
+</html>
