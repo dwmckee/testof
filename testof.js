@@ -37,7 +37,7 @@ function HaveProperty(ctx, prop, expected,
     ctx.action.apply(ctx.obj, ctx.inputs);
     const cmp_result = cmp(ctx.obj[prop], expected);
     return cmp_result ? null :
-	`Expected ${prop} set to ${expected}, but found ${ctx.obj[prop]}`;
+	`Expected property "${prop}" set to ${expected}, but found ${ctx.obj[prop]}`;
 }
 
 // Expect the call to throw an uncaught exception
@@ -140,6 +140,6 @@ class TestOf {
     }
 
     get Fail() {
-	return !this.Passed()
+	return !this.Pass;
     }
 }
