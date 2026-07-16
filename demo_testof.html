@@ -26,7 +26,7 @@
     .Log().HtmlElement().Fail;
 
       // Check result with custom comparison; fail
-      failures += new TestOf("Default sort is numeric")
+      failures += new TestOf("Default sort is numeric (should fail)")
     .Subprogram((a) => { return a.sort(); }, null )
     .Passed([2, 3, 5, 7, 11, 13, 17, 19, 23])
     .Should(Return, [2, 3, 5, 7, 11, 13, 17, 19, 23], cmp = array_equals)
@@ -46,33 +46,40 @@
     .Log().HtmlElement().Fail;
 
       // Object property: fail
-      failures += new TestOf("Object member value")
+      failures += new TestOf("Object member value (should fail)")
     .ByDefault({a: [1, 2]})
     .Should(HaveProperty, "a", [2, 1])
     .Log().HtmlElement().Fail;
 
       // Exception test: pass
-      failures += new TestOf("JSON.parse invalid input")
+      failures += new TestOf("JSON.parse invalid input thorws")
     .Subprogram(JSON.parse)
     .Passed("{ invalid json }")
     .Should(Throw, SyntaxError)
     .Log().HtmlElement().Fail;
 
       // Exception test: fail
-      failures += new TestOf("Math.sqrt no throw")
+      failures += new TestOf("Math.sqrt throws (should fail)")
     .Subprogram(Math.sqrt)
     .Passed(16)
     .Should(Throw, Error)
     .Log().HtmlElement().Fail;
 
-      const results_message = failures
-	    ? `${failures} test${failures > 1 ? "s" : ""} failed`
-	    : `All tests passed`;
+
+      failures += new TestOf("Floating-point approximate equality")
+    .Subprogram(Math.sqrt)
+    .Passed(1.0 + 1e-6)
+    .Should(Return, 1.0) // Not strictly equal, but differs by 5e-7...
+    .Log().HtmlElement().Fail;
+      
+      const results_message = (failures
+	    ? `${failures} test${failures > 1 ? "s" : ""} failed.`
+			       : `All tests passed.`) + ` Expected 3 to fail.`;
       console.log(results_message);
       const result_tag = document.createElement('p');
       result_tag.innerHTML = results_message;
       document.body.append(result_tag);
-      
+
     </script>
 
     <!-- Run the script -->

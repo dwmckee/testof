@@ -12,6 +12,8 @@ integration tests and the like) for pure JavaScript (ES6).
 * Test validators are provided for equality of return values or object
   properties and for routines throwing exceptions. Additional
   validators can be written as needed.
+* Built-in validators for return values and property values use fuzzy
+  comparison for floating-point values, but can be overridden if desired.
 * Test can write to the console, or create HTML elements and append
   them to a DOM.
 * Provisions exist to count passes or failures.
@@ -99,9 +101,7 @@ running in a browser environment, builds a HTML element and appends it
 to an element in the accessible DOM (by default `document.body`).
 
 Two experimental (and non-fluent) interfaces are provided for calling
-code that may want to track the number of success and failures. As of
-this writing they have not been incorporated into the demo code and
-may not even do what I intend. Caveat emptor.
+code that may want to track the number of success and failures. 
 
 
 ## History and inspiration
@@ -109,9 +109,9 @@ may not even do what I intend. Caveat emptor.
 TestOf is the result of my desire for a small, local, JavaScript test
 framework. Some hunting on the web did not turn up what I was looking
 for, but _did_ turn up [a blog post by
-Alex]https://alexwlchan.net/2023/testing-javascript-without-a-framework)
+Alex](https://alexwlchan.net/2023/testing-javascript-without-a-framework)
 which was exactly the sort of thing I'd been thinking about. Then I
-didn't find public repository. And I missed [the place where she
+didn't find public repository, and I missed [the place where she
 states a license](https://alexwlchan.net/license/) for everything on
 hew web page, so I determined to write my own.
 
@@ -126,8 +126,13 @@ rewritten by the human author since generation.
 
 ## To do
 
-* Could use a (or a set of) built-in floating-point approximate comparator(s).
 * More built-in validators.
 * Could use a output tracking option that supports counting how many
   test have been run as well as the number of passes and failure.
+* Would be nice to support chaining multiple validations on a single fluent
+  chain. For instance both `Return` and `HaveProperty`, or multiple
+  distinct `HaveProperty` tests.
+* Would be nice to have a data-driven option (i.e. multiple input with
+  their corresponding expectation to be presented to a single
+  `obj`-`action` pair.
 * Ability to mark known failing tests?

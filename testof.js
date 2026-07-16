@@ -12,45 +12,6 @@
 // new TestOf('At construction').Subprogram(Stack)
 //                              .Should(HaveProperty, "length", 0).HtmlElement();
 
-// Built-in validators
-//
-// All validotors take a context object
-//
-// context: { 
-//   action: Function, 
-//   obj: any, 
-//   inputs: Array 
-//
-// and additional arguments specific to their purpose.  Users are free to supply
-// other validators to meet their needs
-
-// Expect the function to return expected
-function Return(ctx, expected, cmp = (v1, v2) => { return v1 === v2; } ) {
-    const actual = ctx.action.apply(ctx.obj, ctx.inputs);
-    const cmp_result = cmp(actual, expected);
-    return cmp_result ? null : `Expected ${expected} but got ${actual}`;
-}
-
-// Expect that after the call this.obj.prop will have the value expected
-function HaveProperty(ctx, prop, expected,
-		      cmp = (v1, v2) => { return v1 === v2; }) {
-    ctx.action.apply(ctx.obj, ctx.inputs);
-    const cmp_result = cmp(ctx.obj[prop], expected);
-    return cmp_result ? null :
-	`Expected property "${prop}" set to ${expected}, but found ${ctx.obj[prop]}`;
-}
-
-// Expect the call to throw an uncaught exception
-function Throw(ctx, expectedError) {
-    try {
-	ctx.action.apply(ctx.obj, ctx.inputs);
-	return `Expected instance of ${expectedError}, but didn't throw`; // Didn't throw
-    } catch (e) {
-	return (e instanceof expectedError) ? null :
-	    `Expected instance of ${expectedError}, but got ${e}`;
-    }
-}
-
 // Main test interface
 class TestOf {    
     constructor(description) {
@@ -142,4 +103,102 @@ class TestOf {
     get Fail() {
 	return !this.Pass;
     }
+}
+
+// Built-in validators
+//
+// All validotors take a context object
+//
+// context: { 
+//   action: Function, 
+//   obj: any, 
+//   inputs: Array 
+//
+// and additional arguments specific to their purpose.  Users are free to supply
+// other validators to meet their needs
+
+// Expect the function to return expected
+function Return(ctx, expected, cmp = (v1, v2) => defaultCompare ) {
+    const actual = ctx.action.apply(ctx.obj, ctx.inputs);
+    const cmp_result = cmp(actual, expected);
+    return cmp_result ? null : `Expected ${expected} but got ${actual}`;
+}
+
+// Expect that after the call this.obj.prop will have the value expected
+function HaveProperty(ctx, prop, expected, cmp = defaultCompare) {
+    ctx.action.apply(ctx.obj, ctx.inputs);
+    const cmp_result = cmp(ctx.obj[prop], expected);
+    return cmp_result ? null :
+	`Expected property "${prop}" set to ${expected}, but found ${ctx.obj[prop]}`;
+}
+
+// Expect the call to throw an uncaught exception
+function Throw(ctx, expectedError) {
+    try {
+	ctx.action.apply(ctx.obj, ctx.inputs);
+	return `Expected instance of ${expectedError}, but didn't throw`;
+    } catch (e) {
+	return (e instanceof expectedError) ? null :
+	    `Expected instance of ${expectedError}, but got ${e}`;
+    }
+}
+
+// Comparators
+function fpApproximatelyEqual(v1, v2, options = {}) {
+  const ABSOLUTE_THRESHOLD = options.absoluteThreshold ?? 1e-6;
+  const RELATIVE_THRESHOLD = options.relativeThreshold ?? 1e-6;
+
+  const diff = Math.abs(v1 - v2);
+
+  if (diff <= ABSOLUTE_THRESHOLD) {
+    return true;
+  }
+
+  const largest = Math.max(Math.abs(v1), Math.abs(v2));
+  return diff <= largest * RELATIVE_THRESHOLD;
+}
+
+function defaultCompare(v1, v2, options = {}) {
+  if (typeof v1 === 'number' && typeof v2 === 'number') {
+    return fpApproximatelyEqual(v1, v2, options);
+  }
+
+  if (v1 === v2) {
+    return true;
+  }
+
+  if (typeof v1 !== 'object' || v1 === null || typeof v2 !== 'object' || v2 === null) {
+    return v1 === v2;
+  }
+
+  if (Array.isArray(v1) !== Array.isArray(v2)) {
+    return false;
+  }
+
+  if (Array.isArray(v1)) {
+    if (v1.length !== v2.length) {
+      return false;
+    }
+    for (let i = 0; i < v1.length; i++) {
+      if (!defaultCompare(v1[i], v2[i], options)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const keys1 = Object.keys(v1);
+  const keys2 = Object.keys(v2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    if (!Object.prototype.hasOwnProperty.call(v2, key) || !defaultCompare(v1[key], v2[key], options)) {
+      return false;
+    }
+  }
+
+  return true;
 }
